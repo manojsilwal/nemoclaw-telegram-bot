@@ -2,8 +2,11 @@
 Nemoclaw Telegram Bot — Render Web Service
 Receives Telegram webhook updates and forwards them to the Nemoclaw HF Space via Gradio API.
 """
+from __future__ import annotations
+
 import os
 import requests
+from typing import Optional
 from fastapi import FastAPI, Request
 from gradio_client import Client
 
@@ -13,10 +16,17 @@ app = FastAPI()
 TELEGRAM_BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 TELEGRAM_API = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}"
 
-# ── Connect to Nemoclaw on Hugging Face ───────────────────────────────────────
-print("Connecting to Nemoclaw HF Space...")
-hf_client = Client("TradetalkApp/finance-agent-backend-tta")
-print("Connected!")
+# Lazy HF client so Uvicorn binds to $PORT before any external Gradio handshake (Render deploy health).
+_hf_client: Optional[Client] = None
+
+
+def get_hf_client() -> Client:
+    global _hf_client
+    if _hf_client is None:
+        print("Connecting to Nemoclaw HF Space...")
+        _hf_client = Client("TradetalkApp/finance-agent-backend-tta")
+        print("Connected!")
+    return _hf_client
 
 # ── Helper: send a Telegram message ───────────────────────────────────────────
 def send_message(chat_id: int, text: str):
@@ -49,7 +59,7 @@ async def webhook(request: Request):
     thinking_msg_id = thinking_resp.json().get("result", {}).get("message_id")
 
     try:
-        result = hf_client.predict(
+        result = get_hf_client().predict(
             user_input=text,
             history=[],
             api_name="/chat"

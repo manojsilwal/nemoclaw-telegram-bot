@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nemoclaw.local/schemas/leaderboard_row.json",
+  "title": "Backtest leaderboard row",
+  "type": "object",
+  "required": [
+    "strategy_id",
+    "backtest_run_id",
+    "computed_at",
+    "backtest_start",
+    "backtest_end",
+    "survivorship_adjusted",
+    "total_roi",
+    "cagr",
+    "max_drawdown",
+    "sharpe_ratio"
+  ],
+  "properties": {
+    "strategy_id": {
+      "type": "string",
+      "description": "Stable id matching catalog (e.g. ff-quality-value-qmj-hml)"
+    },
+    "backtest_run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique id for this pipeline run (same strategy can have many runs)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name snapshot (optional if joined from catalog)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "factor",
+        "quant_value",
+        "macro_tactical",
+        "dividend_value",
+        "behavioral",
+        "quality_value",
+        "multi_factor",
+        "quality_growth"
+      ]
+    },
+    "rebalance_frequency": {
+      "type": "string",
+      "enum": ["monthly", "quarterly", "semi_annual", "annual"]
+    },
+    "universe": {
+      "type": "string",
+      "description": "e.g. SP500, DJ30, ETF"
+    },
+    "backtest_start": { "type": "string", "format": "date" },
+    "backtest_end": { "type": "string", "format": "date" },
+    "survivorship_adjusted": {
+      "type": "boolean",
+      "description": "True if using point-in-time index membership or equivalent"
+    },
+    "total_roi": {
+      "type": "number",
+      "description": "Total return over window (e.g. 1.847 = 84.7%)"
+    },
+    "cagr": { "type": "number" },
+    "max_drawdown": { "type": "number", "description": "Negative fraction e.g. -0.42" },
+    "sharpe_ratio": { "type": "number" },
+    "sortino_ratio": { "type": "number" },
+    "calmar_ratio": { "type": "number" },
+    "turnover_annualized": { "type": "number" },
+    "benchmark_total_roi": { "type": "number" },
+    "alpha_vs_benchmark": { "type": "number" },
+    "data_vendor": { "type": "string" },
+    "strategy_version": { "type": "integer", "minimum": 1 },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": true
+}

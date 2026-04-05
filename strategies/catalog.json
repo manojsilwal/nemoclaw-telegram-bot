@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "description": "Seed catalog of codeable factor/tactical strategies for backtesting and leaderboard ranking. Claims and citations are informational—validate in your own pipeline.",
+  "strategies": [
+    {
+      "strategy_id": "ff-quality-value-qmj-hml",
+      "name": "Fama-French Quality + Value (QMJ + HML)",
+      "category": "factor",
+      "style": "value_quality",
+      "universe": "SP500",
+      "rebalance_frequency": "quarterly",
+      "rules_summary": "Score quality (ROIC, gross margin, low D/E); top 20% quality; within that, cheapest by P/B or P/FCF; signal long top quintile / avoid or short bottom quintile.",
+      "implementation_notes": [
+        "Define composite quality z-score from cross-section each rebalance date.",
+        "Value tie-break within quality subset: rank on P/B and/or P/FCF (document which)."
+      ],
+      "references": ["Fama-French quality/value factors", "Asness et al. on quality"]
+    },
+    {
+      "strategy_id": "momentum-12-1",
+      "name": "Momentum (12-1 Month)",
+      "category": "factor",
+      "style": "momentum",
+      "universe": "SP500",
+      "rebalance_frequency": "monthly",
+      "rules_summary": "Rank by 12-month return excluding most recent month; hold top 10–20%; equal weight.",
+      "implementation_notes": [
+        "Skip 21 trading days or calendar month per your spec; align across names.",
+        "Exclude recent IPOs with insufficient history."
+      ],
+      "references": ["Jegadeesh & Titman (1993)"]
+    },
+    {
+      "strategy_id": "low-volatility",
+      "name": "Low Volatility Anomaly",
+      "category": "factor",
+      "style": "defensive",
+      "universe": "SP500",
+      "rebalance_frequency": "monthly",
+      "rules_summary": "Rank by 252-day realized volatility (annualized); hold lowest 20%; equal or vol-weighted.",
+      "implementation_notes": [
+        "Use overlapping windows consistently; consider sector/neutral variants to reduce sector bets."
+      ],
+      "references": ["Baker, Bradley & Wurgler (2011)"]
+    },
+    {
+      "strategy_id": "magic-formula-greenblatt",
+      "name": "Magic Formula (Greenblatt)",
+      "category": "quant_value",
+      "style": "deep_value",
+      "universe": "SP500_ex_financials_utilities",
+      "rebalance_frequency": "annual",
+      "rules_summary": "Rank earnings yield (EBIT/EV) and ROIC; combine ranks; hold top 20–30; equal weight; annual rebalance.",
+      "implementation_notes": [
+        "Exact Greenblatt definitions for EV and invested capital must match your data vendor.",
+        "Greenblatt book backtests are illustrative; out-of-sample results vary."
+      ],
+      "references": ["Greenblatt, The Little Book That Beats the Market"]
+    },
+    {
+      "strategy_id": "dual-momentum-antonacci",
+      "name": "Dual Momentum (Gary Antonacci)",
+      "category": "macro_tactical",
+      "style": "trend_momentum",
+      "universe": "ETF",
+      "rebalance_frequency": "monthly",
+      "rules_summary": "Assets: SPY, EFA, cash/T-bills proxy (BIL/SHY). If SPY 12m <= T-bills, go defensive; else pick SPY vs EFA by 12m relative strength.",
+      "implementation_notes": [
+        "Not an S&P 500 stock strategy—separate leaderboard category or filter.",
+        "Use total return indices; align month-end vs month-start consistently."
+      ],
+      "references": ["Antonacci (2012), Dual Momentum"]
+    },
+    {
+      "strategy_id": "dogs-of-the-dow",
+      "name": "Dogs of the Dow",
+      "category": "dividend_value",
+      "style": "income_contrarian",
+      "universe": "DJ30",
+      "rebalance_frequency": "annual",
+      "rules_summary": "Year-end: rank Dow 30 by dividend yield; buy top 10; equal weight; hold 1 year.",
+      "implementation_notes": [
+        "Universe is Dow 30, not S&P 500—label clearly on leaderboard."
+      ],
+      "references": ["Dogs of the Dow popular strategy literature"]
+    },
+    {
+      "strategy_id": "momentum-52-week-high",
+      "name": "52-Week High Momentum",
+      "category": "behavioral",
+      "style": "momentum",
+      "universe": "SP500",
+      "rebalance_frequency": "monthly",
+      "rules_summary": "Score price / 52-week high; buy top quintile (closest to high).",
+      "implementation_notes": [
+        "Define 52-week window on same calendar for all names; handle corporate actions."
+      ],
+      "references": ["George & Hwang (2004)"]
+    },
+    {
+      "strategy_id": "shareholder-yield-fcf-buyback-div",
+      "name": "FCF Yield + Buyback Yield (Shareholder Yield)",
+      "category": "quality_value",
+      "style": "capital_return",
+      "universe": "SP500",
+      "rebalance_frequency": "quarterly",
+      "rules_summary": "Rank by FCF yield + net buyback yield + dividend yield; hold top 20%.",
+      "implementation_notes": [
+        "Buyback yield needs clean shares outstanding and buyback from cash flow statement.",
+        "Financials may need adjusted FCF definitions."
+      ],
+      "references": ["Meb Faber on shareholder yield"]
+    },
+    {
+      "strategy_id": "aqr-value-momentum-blend",
+      "name": "Value + Momentum Combo (AQR Style)",
+      "category": "multi_factor",
+      "style": "blended",
+      "universe": "SP500",
+      "rebalance_frequency": "monthly",
+      "rules_summary": "Value score from inverted percentiles of P/E, P/B, P/FCF; momentum from 12-1 return percentile; 50/50 blend; top 20%.",
+      "implementation_notes": [
+        "Cross-sectional ranks each month; handle missing fundamentals.",
+        "Document winsorization of extremes."
+      ],
+      "references": ["AQR multi-factor research"]
+    },
+    {
+      "strategy_id": "roic-revenue-growth-buffett-proxy",
+      "name": "ROIC + Revenue Growth (Buffett-Quantified)",
+      "category": "quality_growth",
+      "style": "garp",
+      "universe": "SP500",
+      "rebalance_frequency": "semi_annual",
+      "rules_summary": "ROIC > 15% for 3 consecutive years; revenue growth > 8% YoY; rank survivors by P/FCF ascending.",
+      "implementation_notes": [
+        "ROIC definition must be fixed (NOPAT/invested capital, etc.).",
+        "YoY revenue on fiscal or calendar basis—pick one."
+      ],
+      "references": ["Buffett-style compounder screens (heuristic proxy)"]
+    }
+  ]
+}

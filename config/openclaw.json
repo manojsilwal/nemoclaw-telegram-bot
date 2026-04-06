@@ -1,7 +1,7 @@
 {
   "gateway": {
     "mode": "local",
-    "bind": "lan",
+    "bind": "any",
     "auth": {
       "mode": "token",
       "token": "${OPENCLAW_GATEWAY_TOKEN}"

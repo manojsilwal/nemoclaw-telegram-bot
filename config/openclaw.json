@@ -1,10 +1,14 @@
 {
   "gateway": {
     "mode": "local",
+    "port": 8080,
     "bind": "lan",
     "auth": {
       "mode": "token",
       "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    },
+    "controlUi": {
+      "allowedOrigins": ["https://nemoclaw-telegram-bot.onrender.com"]
     }
   },
   "agents": {

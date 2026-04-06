@@ -15,6 +15,7 @@ RUN mkdir -p /home/node/.cache/ms-playwright \
   && chown -R node:node /home/node/.cache/ms-playwright
 
 COPY config/openclaw.json /opt/openclaw/openclaw.json
+COPY strategies/skills /opt/openclaw/skills
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod 0755 /usr/local/bin/docker-entrypoint.sh \
   && chown root:root /usr/local/bin/docker-entrypoint.sh

@@ -23,3 +23,7 @@ services:
         sync: false
       - key: TELEGRAM_BOT_TOKEN
         sync: false
+      - key: FIRECRAWL_BASE_URL
+        value: "https://fincrawler.onrender.com"
+      - key: FIRECRAWL_API_KEY
+        sync: false

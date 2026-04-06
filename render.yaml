@@ -7,8 +7,12 @@ services:
     plan: free
     healthCheckPath: /health
     envVars:
+      - key: PORT
+        value: "8080"
       - key: OPENCLAW_GATEWAY_PORT
         value: "8080"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=384"
       - key: OPENCLAW_STATE_DIR
         value: /home/node/.openclaw
       - key: OPENCLAW_WORKSPACE_DIR

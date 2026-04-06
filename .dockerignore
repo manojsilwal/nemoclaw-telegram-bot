@@ -4,4 +4,5 @@ strategies
 .env
 .env.*
 *.md
+!skills/**/*.md
 .cursor

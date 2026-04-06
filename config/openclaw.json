@@ -23,5 +23,27 @@
   },
   "browser": {
     "enabled": false
+  },
+  "tools": {
+    "web": {
+      "search": {
+        "provider": "firecrawl"
+      }
+    }
+  },
+  "plugins": {
+    "entries": {
+      "firecrawl": {
+        "enabled": true,
+        "config": {
+          "webFetch": {
+            "apiKey": "${FIRECRAWL_API_KEY}"
+          },
+          "webSearch": {
+            "apiKey": "${FIRECRAWL_API_KEY}"
+          }
+        }
+      }
+    }
   }
 }

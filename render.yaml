@@ -1,11 +1,10 @@
 # OpenClaw on Render — https://docs.openclaw.ai/install/render
 # Set secrets in the dashboard: OPENCLAW_GATEWAY_TOKEN, GEMINI_API_KEY (or GOOGLE_API_KEY), TELEGRAM_BOT_TOKEN.
 services:
-  - type: web
+  - type: worker
     name: openclaw
     runtime: docker
     plan: free
-    healthCheckPath: /health
     envVars:
       - key: OPENCLAW_GATEWAY_PORT
         value: "8080"

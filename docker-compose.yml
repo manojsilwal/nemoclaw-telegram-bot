@@ -1,0 +1,136 @@
+# OpenClaw + Paperclip (DreamRise) on GCP
+# Both UIs bind to 127.0.0.1 only — access via SSH tunnel or Tailscale:
+#
+#   gcloud compute ssh openclaw-gateway --zone=us-central1-a -- \
+#     -L 8080:127.0.0.1:8080 \
+#     -L 3100:127.0.0.1:3100
+#
+# http://localhost:8080 → OpenClaw control UI
+# http://localhost:3100 → Paperclip (DreamRise company)
+#
+# On the GCP VM, clone both repos side by side:
+#   ~/nemoclaw-telegram-bot/   ← this repo
+#   ~/DreamRise/paperclip/     ← paperclip source (built here)
+#
+# Set PAPERCLIP_SOURCE_DIR in .env, or export it before running compose:
+#   export PAPERCLIP_SOURCE_DIR=~/DreamRise/paperclip
+#   docker compose up -d --build
+
+services:
+
+  # ── PostgreSQL (Paperclip's database) ────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: paperclip
+      POSTGRES_PASSWORD: paperclip
+      POSTGRES_DB: paperclip
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paperclip -d paperclip"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  # ── Paperclip server (built from DreamRise/paperclip source) ─────────────
+  paperclip:
+    build:
+      context: ${PAPERCLIP_SOURCE_DIR:-../DreamRise/paperclip}
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:3100:3100"
+    environment:
+      DATABASE_URL: postgres://paperclip:paperclip@db:5432/paperclip?sslmode=disable
+      PORT: "3100"
+      HOST: "0.0.0.0"
+      SERVE_UI: "true"
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated"
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "private"
+      PAPERCLIP_PUBLIC_URL: "http://34.71.253.221:3100"
+      BETTER_AUTH_URL: "http://34.71.253.221:3100"
+      PAPERCLIP_ALLOWED_HOSTNAMES: "localhost,paperclip"
+      BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}"
+    volumes:
+      - paperclip-data:/paperclip
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e",
+             "fetch('http://127.0.0.1:3100/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+
+  # ── OpenClaw gateway (Telegram + Paperclip skill) ────────────────────────
+  openclaw:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      OPENCLAW_GATEWAY_PORT: "8080"
+      NODE_OPTIONS: "--max-old-space-size=384"
+      OPENCLAW_TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_WORKSPACE_DIR: /home/node/workspace
+      OPENCLAW_DISABLE_DEVICE_AUTH: "1"
+      # Paperclip connection — using Docker internal service hostname
+      PAPERCLIP_URL: "http://paperclip:3100"
+      PAPERCLIP_COMPANY_ID: "48f61379-2369-4c6c-adcf-8396f3201c0d"
+      PAPERCLIP_CEO_AGENT_ID: "a2531311-5dd4-4dc4-b7da-a27baab51849"
+      PAPERCLIP_API_KEY: "paperclip_7ab54b7e_5072_48c4_9629_46ab9a8a909f"
+    volumes:
+      - openclaw-state:/home/node/.openclaw
+      - openclaw-workspace:/home/node/workspace
+    networks:
+      - internal
+    depends_on:
+      paperclip:
+        condition: service_healthy
+
+  # ── Result Watcher (polls Paperclip → generates reports → notifies Telegram) ─
+  result-watcher:
+    build:
+      context: ./result-watcher
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      PAPERCLIP_URL: "http://paperclip:3100"
+      PAPERCLIP_PUBLIC_URL: "http://34.71.253.221:3100"
+      PAPERCLIP_COMPANY_ID: "48f61379-2369-4c6c-adcf-8396f3201c0d"
+      PAPERCLIP_API_KEY: "paperclip_7ab54b7e_5072_48c4_9629_46ab9a8a909f"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
+      PUBLIC_BASE_URL: "http://34.71.253.221:4000"
+      POLL_INTERVAL_MS: "120000"
+      STATE_FILE: "/data/watcher-state.json"
+    volumes:
+      - watcher-data:/data
+    networks:
+      - internal
+    depends_on:
+      paperclip:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:
+  paperclip-data:
+  openclaw-state:
+  openclaw-workspace:
+  watcher-data:

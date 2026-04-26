@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "oracle-db": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "ORACLE_CONNECTION_STRING",
+        "-e",
+        "TARGET_SCHEMA",
+        "-e",
+        "CACHE_DIR",
+        "-e",
+        "THICK_MODE",
+        "-e",
+        "READ_ONLY_MODE",
+        "dmeppiel/oracle-mcp-server:latest"
+      ],
+      "env": {
+        "TARGET_SCHEMA": "",
+        "CACHE_DIR": ".cache",
+        "THICK_MODE": "",
+        "READ_ONLY_MODE": "1"
+      }
+    }
+  }
+}

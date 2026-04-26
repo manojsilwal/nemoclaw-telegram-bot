@@ -5,11 +5,9 @@
     "bind": "lan",
     "auth": {
       "mode": "token",
-      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+      "token": ""
     },
-    "controlUi": {
-      "allowedOrigins": ["https://nemoclaw-telegram-bot.onrender.com"]
-    }
+    "controlUi": {}
   },
   "agents": {
     "defaults": {
@@ -27,8 +25,8 @@
   "channels": {
     "telegram": {
       "enabled": true,
+      "botToken": "",
       "dmPolicy": "pairing"
     }
   }
 }
-

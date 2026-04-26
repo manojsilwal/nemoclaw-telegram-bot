@@ -5,13 +5,17 @@ FROM ghcr.io/openclaw/openclaw:latest
 
 USER root
 
+# Named volumes default to root:root; entrypoint chowns then drops to node via gosu.
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gosu \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY config/openclaw.json /opt/openclaw/openclaw.json
 COPY skills /opt/openclaw/skills
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod 0755 /usr/local/bin/docker-entrypoint.sh \
   && chown root:root /usr/local/bin/docker-entrypoint.sh
 
-USER node
 WORKDIR /app
 
 HEALTHCHECK --interval=3m --timeout=10s --start-period=90s --retries=3 \

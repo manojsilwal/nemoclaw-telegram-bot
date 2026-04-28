@@ -115,6 +115,7 @@ services:
       TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN}"
       PUBLIC_BASE_URL: "http://34.71.253.221:4000"
       POLL_INTERVAL_MS: "120000"
+      DEFAULT_TELEGRAM_CHAT_ID: "7336081149"
       STATE_FILE: "/data/watcher-state.json"
     volumes:
       - watcher-data:/data

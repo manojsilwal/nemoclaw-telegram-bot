@@ -58,6 +58,8 @@ services:
       BETTER_AUTH_SECRET: "${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}"
     volumes:
       - paperclip-data:/paperclip
+      - ${PAPERCLIP_SOURCE_DIR:-../DreamRise/paperclip}/../agents:/paperclip/agents
+      - ${PAPERCLIP_SOURCE_DIR:-../DreamRise/paperclip}/../rules:/paperclip/rules
     networks:
       - internal
     depends_on:

@@ -449,15 +449,22 @@ async function poll() {
         const reportUrl = `${PUBLIC_BASE_URL}/report/${issue.id}`;
         const telegraphUrl = await publishToTelegraph(full, subs);
         const tg = await sendTelegramResult(chatId, full, reportUrl, telegraphUrl);
-        if (tg.ok) console.log(`[poll] ✅ Notified chat ${chatId} (telegraph: ${telegraphUrl || 'n/a'})`);
-        else console.error(`[poll] ⚠️ TG error:`, tg.description);
-        STATE.notified[issue.id] = { at: Date.now(), chatId, telegraphUrl };
-        saveState(STATE);
+        if (tg.ok) {
+          console.log(`[poll] ✅ Notified chat ${chatId} (telegraph: ${telegraphUrl || 'n/a'})`);
+          // Only mark as notified AFTER a confirmed successful Telegram delivery
+          STATE.notified[issue.id] = { at: Date.now(), chatId, telegraphUrl };
+          saveState(STATE);
+        } else {
+          console.error(`[poll] ⚠️ TG send failed for ${issue.id} — will retry next poll. Error:`, tg.description);
+        }
       } catch (err) { console.error(`[poll] ❌ ${issue.id}:`, err.message); }
     }
   } catch (err) { console.error("[poll] ❌ fetch failed:", err.message); }
 }
 
-poll();
-setInterval(poll, POLL_INTERVAL_MS);
-console.log(`[result-watcher] Polling every ${POLL_INTERVAL_MS/1000}s`);
+// Delay first poll by 10s to let Docker networking fully stabilize
+console.log(`[result-watcher] Polling every ${POLL_INTERVAL_MS/1000}s (first poll in 10s)`);
+setTimeout(() => {
+  poll();
+  setInterval(poll, POLL_INTERVAL_MS);
+}, 10000);
